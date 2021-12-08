@@ -20,11 +20,20 @@ async def on_ready():
 async def on_message(message):
     if message.author == bot.user:
         return
-    print("Message Recieved")
+    print(f"Message Recieved from {message.author.id}")
     if type(message.channel) == DMChannel and getMemberGuilds(message.author):
-        print(message.content)
         channel = bot.get_channel(config["channel"])
-        await channel.send(message.content)#TODO Format this message so its clear who sent it
+        res = f"<@{message.author.id}> **Sent:** ```{message.content}``` **With Attachments**:\n"
+        if not message.attachments:
+            res += "*None*"
+        else:
+            for attachment in message.attachments:
+                res += f"{attachment}\n"
+        await channel.send(res)
+
+@bot.event
+async def on_raw_reaction_add(payload):
+    pass
 
 def getMemberGuilds(user):
     commonGuilds = []
