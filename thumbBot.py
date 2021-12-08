@@ -29,13 +29,22 @@ async def on_message(message):
         else:
             for attachment in message.attachments:
                 res += f"{attachment}\n"
-        await channel.send(res)
+        msg = await channel.send(res)
+        await msg.add_reaction("👍")
 
 @bot.event
 async def on_raw_reaction_add(payload):
-    pass
+    if payload.channel_id != config["channel"] or str(payload.emoji) != "👍" or payload.user_id == bot.user.id:
+        return
+    channel = bot.get_channel(payload.channel_id)
+    message = await channel.fetch_message(payload.message_id)
+    user = message.mentions[0]
+    #dmChannel = user.dm_channel
+    #if not dmChannel:
+    #    dmChannel = await user.create_dm()
+    await user.send(f"Your Submission created at *{message.created_at}* has been verified.")
 
-def getMemberGuilds(user):
+def getMemberGuilds(user):#TODO rewrite this for single guild use
     commonGuilds = []
     for guild in bot.guilds:
         if user in guild.members:
