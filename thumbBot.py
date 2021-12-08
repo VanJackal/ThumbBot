@@ -39,9 +39,6 @@ async def on_raw_reaction_add(payload):
     channel = bot.get_channel(payload.channel_id)
     message = await channel.fetch_message(payload.message_id)
     user = message.mentions[0]
-    #dmChannel = user.dm_channel
-    #if not dmChannel:
-    #    dmChannel = await user.create_dm()
     await user.send(f"Your Submission created at *{message.created_at}* has been verified.")
 
 def getMemberGuilds(user):#TODO rewrite this for single guild use
