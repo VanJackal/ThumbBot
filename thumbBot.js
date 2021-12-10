@@ -1,4 +1,6 @@
 const Discord = require("discord.js");
+const winston = require("winston")
+
 const intents = ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_MESSAGES']
 const client = new Discord.Client({ intents: intents });
 
@@ -12,10 +14,14 @@ client.on('ready', () => {
 
 client.on('messageCreate', async message => {
     if (config["channels-submit"].includes(message.channelId)) {
-        await forwardMsgToVerify(message);
-        message.delete().then(msg => console.log(`Delete Message: ${msg.id}`));
+        processSubmission(message)
     }
 });
+
+const processSubmission = async (message) => {
+    await forwardMsgToVerify(message);
+    message.delete().then(msg => console.log(`Delete Message: ${msg.id}`));
+}
 
 const forwardMsgToVerify = async (message) => {
     const channel = await client.channels.fetch(config["channel-verify"]);
