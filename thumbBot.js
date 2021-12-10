@@ -28,7 +28,7 @@ client.on('messageCreate', async (message) => {
     member = await message.guild.members.fetch(message.author);
 
     if (config.channelVerify == message.channelId && message.reference && member.roles.cache.has(config.adminRole)){
-        console.log(message.reference)
+        console.log(message.reference)//TODO clean this function up so it doesnt rely on the message for the channel/guild
         const channel = message.channel
         const submission = await channel.messages.fetch(message.reference.messageId)
         let comp = new Discord.MessageActionRow()
@@ -37,7 +37,7 @@ client.on('messageCreate', async (message) => {
     }
 })
 
-const processSubmission = async (message) => {
+const processSubmission = async (message) => {//TODO Move these functions to a library file
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
     await forwardMsgToVerify(message);
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
