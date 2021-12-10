@@ -20,7 +20,16 @@ const logger = createLogger({
     transports: [
         new transports.Console(),
         new transports.File({ filename: `./Logging/${getDateString()}.primary.log` })
-    ]
+    ],
+    levels:{
+        fatal:0,
+        error:1,
+        warn:2,
+        info:3,
+        debug:4,
+        trace:5
+    },
+    level:'debug'
 })
 
 module.exports = {
