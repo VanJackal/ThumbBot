@@ -19,8 +19,8 @@ const logger = createLogger({
         primaryFormat
     ),
     transports: [
-        new transports.Console(),
-        new transports.File({ filename: `./Logging/${getDateString()}.primary.log` })
+        new transports.Console({handleExceptions:true}),
+        new transports.File({ filename: `./Logging/${getDateString()}.primary.log`, handleExceptions:true })
     ],
     levels:{
         fatal:0,
