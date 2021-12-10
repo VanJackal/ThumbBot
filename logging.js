@@ -1,6 +1,7 @@
 const { format, transports, createLogger } = require('winston');
 const { combine, timestamp, printf } = format;
 const date = require('date-and-time')
+const config = require("./config.json")
 
 const primaryFormat = printf(({ level, message, timestamp }) => {
     return `${timestamp} - ${level}: ${message}`;
@@ -29,7 +30,7 @@ const logger = createLogger({
         debug:4,
         trace:5
     },
-    level:'debug'
+    level:config.loglevel
 })
 
 module.exports = {

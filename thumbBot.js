@@ -15,7 +15,10 @@ client.on('ready', () => {
 });
 
 client.on('messageCreate', async message => {
-    if (config["channels-submit"].includes(message.channelId)) {
+    if (message.author.id == client.user.id){//dont process messages from the bot
+        return
+    }
+    if (config.channelsSubmit.includes(message.channelId)) {//process messages sent in submit channels
         processSubmission(message)
     }
 });
@@ -29,7 +32,8 @@ const processSubmission = async (message) => {
 const forwardMsgToVerify = async (message) => {
     logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
 
-    const channel = await client.channels.fetch(config["channel-verify"]);
+    logger.log('trace',`Fetching Channel - id:${config.channelVerify}`)
+    const channel = await client.channels.fetch(config.channelVerify);
     let msg = `<@${message.author.id}> **Sent:**\`\`\`${message.content}\`\`\`**With Attachments:**\n`;//TODO convert to embed
 
     if (message.attachments.size > 0) {
@@ -40,6 +44,7 @@ const forwardMsgToVerify = async (message) => {
         msg += "*None*"
     }
 
+    logger.log("trace",`Sending ${message.id} to Verify Channel`);
     newMsg = await channel.send(msg);
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
 }

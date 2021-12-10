@@ -2,11 +2,13 @@
     "prefix": "!",
     "guild": "667029987479650324",
     "role": "917924008362639431",
-    "channel-verify": "917824894991999016",
-    "channels-submit": [
-        "917907692146794516"
+    "channelVerify": "918186920322928671",
+    "channelsSubmit": [
+        "917907692146794516",
+        "917824894991999016"
     ],
-    "channels-logging": [
+    "channelsLogging": [
         "918336622527913985"
-    ]
+    ],
+    "loglevel":"trace"
 }
