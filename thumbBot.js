@@ -16,10 +16,11 @@ client.on('ready', () => {
 
 client.on('messageCreate', async message => {
     if (message.author.id == client.user.id) return;//dont process messages from the bot
+    member = await message.guild.members.fetch(message.author);
 
-    if (config.channelsSubmit.includes(message.channelId)) {//process messages sent in submit channels
+    if (config.channelsSubmit.includes(message.channelId) && member.roles.cache.has(config.playerRole)) {//process messages sent in submit channels
         processSubmission(message)
-    }//TODO Verify user has the required role for this
+    }
 });
 
 client.on('messageCreate', async (message) => {
