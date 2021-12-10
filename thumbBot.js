@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
-const winston = require("winston")
+require("./logging")
+const { logger } = require('./logging')
 
 const intents = ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_MESSAGES']
 const client = new Discord.Client({ intents: intents });
@@ -9,7 +10,7 @@ const TOKEN = require("./token.json").TOKEN
 const PREFIX = config.prefix;
 
 client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}!`);
+    logger.info(`Logged in as ${client.user.tag}!`);
 });
 
 client.on('messageCreate', async message => {

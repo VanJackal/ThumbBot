@@ -2,6 +2,7 @@
 # ThumbBot
 token.json
 .env
+/Logging
 # Logs
 logs
 *.log

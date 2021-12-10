@@ -9,6 +9,7 @@
   "author": "VanJackal",
   "license": "ISC",
   "dependencies": {
+    "date-and-time": "^2.0.1",
     "discord.js": "^13.3.1",
     "winston": "^3.3.3"
   }
