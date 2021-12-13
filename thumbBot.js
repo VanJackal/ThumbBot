@@ -16,24 +16,24 @@ client.on('ready', () => {
 
 client.on('messageCreate', async message => {
     if (message.author.id == client.user.id) return;//dont process messages from the bot
-    member = await message.guild.members.fetch(message.author);
+    member = getGuildMember(message.author.id);
 
-    if (config.channelsSubmit.includes(message.channelId) && member.roles.cache.has(config.playerRole)) {//process messages sent in submit channels
+    if (isSubmitChannel(message.channelId) && memberHasRole(config.playerRole,member)) {
         processSubmission(message)
     }
 });
 
 client.on('messageCreate', async (message) => {
-    if (message.author.id == client.user.id || !message.guild) return;//dont process messages from the bot
-    member = await message.guild.members.fetch(message.author);
+    if (message.author.id == client.user.id || !message.guild) return;//dont process messages from the bot or DM's
+    member = getGuildMember(message.author.id);
 
-    if (config.channelVerify == message.channelId && message.reference && member.roles.cache.has(config.adminRole)){
+    if (isVerifyChannel(message.channelId) && memberHasRole(config.adminRole, member)) {
         console.log(message.reference)//TODO clean this function up so it doesnt rely on the message for the channel/guild
         const channel = message.channel
         const submission = await channel.messages.fetch(message.reference.messageId)
         let comp = new Discord.MessageActionRow()
-        comp.addComponents(new Discord.MessageButton({label:"Verify",customId:"verifyButton",style:"PRIMARY"}))
-        submission.reply({content:`Verify the value \`${message.content}\` for this submission?`,components:[comp]})
+        comp.addComponents(new Discord.MessageButton({ label: "Verify", customId: "verifyButton", style: "PRIMARY" }))
+        submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
     }
 })
 
@@ -46,7 +46,7 @@ const processSubmission = async (message) => {//TODO Move these functions to a l
 const forwardMsgToVerify = async (message) => {
     logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
 
-    logger.log('trace',`Fetching Channel - id:${config.channelVerify}`)
+    logger.log('trace', `Fetching Channel - id:${config.channelVerify}`)
     const channel = await client.channels.fetch(config.channelVerify);
     let msg = `<@${message.author.id}> **Sent:**\`\`\`${message.content}\`\`\`**With Attachments:**\n`;//TODO convert to embed
 
@@ -58,9 +58,32 @@ const forwardMsgToVerify = async (message) => {
         msg += "*None*"
     }
 
-    logger.log("trace",`Sending ${message.id} to Verify Channel`);
+    logger.log("trace", `Sending ${message.id} to Verify Channel`);
     newMsg = await channel.send(msg);
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
+}
+
+const isSubmitChannel = (channelId) => {
+    return config.channelsSubmit.includes(channelId)
+}
+
+const isVerifyChannel = (channelId) => {
+    return config.channelVerify == channelId
+}
+
+const memberHasRole = (roleId, member) => {
+    return member.roles.cache.has(roleId)
+}
+
+/**
+ * 
+ * @param {Discord.UserResolvable} userId 
+ * @returns {Discord.GuildMember}
+ */
+const getGuildMember = (userId) => {
+    const guild = await client.guilds.fetch(config.guild)
+    const member = await guild.members.fetch(userId)
+    return member
 }
 
 client.login(TOKEN);
