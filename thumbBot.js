@@ -46,17 +46,9 @@ const processSubmission = async (message) => {//TODO Move these functions to a l
 const forwardMsgToVerify = async (message) => {
     logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
 
-    logger.log('trace', `Fetching Channel - id:${config.channelVerify}`)
     const channel = await client.channels.fetch(config.channelVerify);
     let msg = `<@${message.author.id}> **Sent:**\`\`\`${message.content}\`\`\`**With Attachments:**\n`;//TODO convert to embed
-
-    if (message.attachments.size > 0) {
-        message.attachments.forEach(attach => {
-            msg += `${attach.url}\n`
-        });
-    } else {
-        msg += "*None*"
-    }
+    msg += getAttachmentsString(message.attachments)
 
     logger.log("trace", `Sending ${message.id} to Verify Channel`);
     newMsg = await channel.send(msg);
@@ -84,6 +76,20 @@ const getGuildMember = (userId) => {
     const guild = await client.guilds.fetch(config.guild)
     const member = await guild.members.fetch(userId)
     return member
+}
+
+const getAttachmentsString = (attachments) => {
+    attachStr = ""
+
+    if (attachments.size > 0) {
+        attachments.forEach(attach => {
+            attachStr += `${attach.url}\n`
+        });
+    } else {
+        attachStr += "*None*"
+    }
+
+    return attachStr
 }
 
 client.login(TOKEN);
