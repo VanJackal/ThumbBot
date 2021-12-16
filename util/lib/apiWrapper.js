@@ -1,11 +1,11 @@
-const { logger } = require('./logging')
+const { logger } = require('../../logging')
 
 /**
  * Verify the value currently pending in a submission
  * 
  * @param {int} submitId snowflake of the submission
  */
-const verifySubmission = (submitId) => {
+exports.verifySubmission = (submitId) => {
     logger.info(`Verified Submission #${submitId}`)
     logger.warn("verifySubmission - NotImplemented")
 }
@@ -17,7 +17,7 @@ const verifySubmission = (submitId) => {
  * @param {string} body body of the submission message
  * @param {int} userId discord user snowflake
  */
-const submitNew = (submitId, body, userId) => {
+exports.submitNew = (submitId, body, userId) => {
     logger.info(`New Submission Created - user:${userId} submitId:${submitId} body:${body}`)
     logger.warn("submitNew - NotImplemented")
 }
@@ -28,7 +28,7 @@ const submitNew = (submitId, body, userId) => {
  * @param {integer} submitId discord snowflake of the submission message
  * @param {*} data 
  */
-const submitData = (submitId, data) => {
+exports.submitData = (submitId, data) => {
     logger.info(`Added Data Pending Verification - submitId:${submitId} data:${data}`)
     logger.warn("submitData - NotImplemented")
 }
