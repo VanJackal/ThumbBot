@@ -28,18 +28,21 @@ client.on('messageCreate', async (message) => {
     member = await getGuildMember(message.author.id);
 
     if (isVerifyChannel(message.channelId) && memberHasRole(config.adminRole, member)) {
-        console.log(message.reference)//TODO clean this function up so it doesnt rely on the message for the channel/guild
         const channel = message.channel
         const submission = await channel.messages.fetch(message.reference.messageId)
+        
         let comp = new Discord.MessageActionRow()
         comp.addComponents(new Discord.MessageButton({ label: "Verify", customId: "verifyButton", style: "PRIMARY" }))
+
         submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
     }
 })
 
 client.on('interactionCreate', interaction => {
     if(!interaction.isButton()) return;
-    interaction.reply({content:interaction.message.content, ephemeral:true})
+    const submissionId = interaction.message.reference.messageId
+    const content = `\`{value}\` has been verified for submission \`${submissionId}\``
+    interaction.reply(content)
 })
 
 const processSubmission = async (message) => {//TODO Move these functions to a library file
