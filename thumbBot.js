@@ -37,6 +37,11 @@ client.on('messageCreate', async (message) => {
     }
 })
 
+client.on('interactionCreate', interaction => {
+    if(!interaction.isButton()) return;
+    interaction.reply({content:interaction.message.content, ephemeral:true})
+})
+
 const processSubmission = async (message) => {//TODO Move these functions to a library file
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
     await forwardMsgToVerify(message);
@@ -72,7 +77,7 @@ const memberHasRole = (roleId, member) => {
  * @param {Discord.UserResolvable} userId 
  * @returns {Discord.GuildMember}
  */
-const getGuildMember = (userId) => {
+const getGuildMember = async (userId) => {
     const guild = await client.guilds.fetch(config.guild)
     const member = await guild.members.fetch(userId)
     return member
