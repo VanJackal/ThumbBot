@@ -14,6 +14,9 @@ client.on('ready', () => {
     logger.info(`Logged in as ${client.user.tag}!`);
 });
 
+/**
+ * Process Submit Channel
+ */
 client.on('messageCreate', async message => {
     if (message.author.id == client.user.id) return;//dont process messages from the bot
     member = await getGuildMember(message.author.id);
@@ -23,6 +26,9 @@ client.on('messageCreate', async message => {
     }
 });
 
+/**
+ * Process Verify Channel
+ */
 client.on('messageCreate', async (message) => {
     if (message.author.id == client.user.id || !message.guild) return;//dont process messages from the bot or DM's
     member = await getGuildMember(message.author.id);
@@ -38,6 +44,9 @@ client.on('messageCreate', async (message) => {
     }
 })
 
+/**
+ * Process Buttons
+ */
 client.on('interactionCreate', interaction => {
     if(!interaction.isButton()) return;
     const submissionId = interaction.message.reference.messageId
