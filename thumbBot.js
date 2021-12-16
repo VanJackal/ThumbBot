@@ -25,7 +25,7 @@ client.on('messageCreate', async message => {
     if (isSubmitChannel(message.channelId) && memberHasRole(config.playerRole, member)) {
         processSubmission(message)
     }
-});
+});//TODO on message could be moved to single on message function with a switch on channel id
 
 /**
  * Process Verify Channel
@@ -45,17 +45,28 @@ client.on('messageCreate', async (message) => {
 client.on('interactionCreate', interaction => {
     if (!interaction.isButton()) return;
     const submissionId = interaction.message.reference.messageId
+    API.verifySubmission(submissionId)
     const content = `\`{value}\` has been verified for submission \`${submissionId}\``
     interaction.reply(content)
 })
 
 const processSubmission = async (message) => {//TODO Move these functions to a library file
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
-    await forwardMsgToVerify(message);
+    body = message.content//TODO this should be an object containing the content and attachments (validity should also be checked)
+    await forwardMsgToVerify(message);//TODO pull some of the logic out of this function and into process submit
+    API.submitNew(message.id,message.content,message.author.id)
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
 }
 
 const processVerifyMessage = async (message) => {
+    submitValue = parseInt(message.content)//TODO these 2 vars should not be in this function they should be passed to it or it should pass them to another function
+    submitId = message.reference.messageId
+    if (!submitValue) {
+        console.log("invalid input")
+        //TODO Notify moderator of bad input
+    }
+    API.submitData(submitId,submitValue)
+
     const channel = message.channel
     const submission = await channel.messages.fetch(message.reference.messageId)
 
