@@ -7,7 +7,7 @@ const client = new Discord.Client({ intents: intents });
 const config = require("./config.json");
 const TOKEN = require("./token.json").TOKEN;
 const PREFIX = config.prefix;
-const {API} = require("./util")
+const { API } = require("./util")
 
 logger.info("Startup")
 
@@ -22,7 +22,7 @@ client.on('messageCreate', async message => {
     if (message.author.id == client.user.id) return;//dont process messages from the bot
     member = await getGuildMember(message.author.id);
 
-    if (isSubmitChannel(message.channelId) && memberHasRole(config.playerRole,member)) {
+    if (isSubmitChannel(message.channelId) && memberHasRole(config.playerRole, member)) {
         processSubmission(message)
     }
 });
@@ -34,14 +34,8 @@ client.on('messageCreate', async (message) => {
     if (message.author.id == client.user.id || !message.guild) return;//dont process messages from the bot or DM's
     member = await getGuildMember(message.author.id);
 
-    if (isVerifyChannel(message.channelId) && memberHasRole(config.adminRole, member)) {
-        const channel = message.channel
-        const submission = await channel.messages.fetch(message.reference.messageId)
-        
-        let comp = new Discord.MessageActionRow()
-        comp.addComponents(new Discord.MessageButton({ label: "Verify", customId: "verifyButton", style: "PRIMARY" }))
-
-        submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
+    if (isVerifyChannel(message.channelId) && memberHasRole(config.adminRole, member) && message.reference) {
+        await processVerifyMessage(message)
     }
 })
 
@@ -49,7 +43,7 @@ client.on('messageCreate', async (message) => {
  * Process Buttons
  */
 client.on('interactionCreate', interaction => {
-    if(!interaction.isButton()) return;
+    if (!interaction.isButton()) return;
     const submissionId = interaction.message.reference.messageId
     const content = `\`{value}\` has been verified for submission \`${submissionId}\``
     interaction.reply(content)
@@ -59,6 +53,16 @@ const processSubmission = async (message) => {//TODO Move these functions to a l
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
     await forwardMsgToVerify(message);
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
+}
+
+const processVerifyMessage = async (message) => {
+    const channel = message.channel
+    const submission = await channel.messages.fetch(message.reference.messageId)
+
+    let comp = new Discord.MessageActionRow()
+    comp.addComponents(new Discord.MessageButton({ label: "Verify", customId: "verifyButton", style: "PRIMARY" }))
+
+    submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
 }
 
 const forwardMsgToVerify = async (message) => {
