@@ -16,7 +16,7 @@ client.on('ready', () => {
 
 client.on('messageCreate', async message => {
     if (message.author.id == client.user.id) return;//dont process messages from the bot
-    member = getGuildMember(message.author.id);
+    member = await getGuildMember(message.author.id);
 
     if (isSubmitChannel(message.channelId) && memberHasRole(config.playerRole,member)) {
         processSubmission(message)
@@ -25,7 +25,7 @@ client.on('messageCreate', async message => {
 
 client.on('messageCreate', async (message) => {
     if (message.author.id == client.user.id || !message.guild) return;//dont process messages from the bot or DM's
-    member = getGuildMember(message.author.id);
+    member = await getGuildMember(message.author.id);
 
     if (isVerifyChannel(message.channelId) && memberHasRole(config.adminRole, member)) {
         console.log(message.reference)//TODO clean this function up so it doesnt rely on the message for the channel/guild
@@ -68,7 +68,7 @@ const isVerifyChannel = (channelId) => {
     return config.channelVerify == channelId
 }
 
-const memberHasRole = (roleId, member) => {
+const memberHasRole = async (roleId, member) => {
     return member.roles.cache.has(roleId)
 }
 
