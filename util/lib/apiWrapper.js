@@ -25,7 +25,7 @@ exports.submitNew = (submitId, body, userId) => {
 /**
  * Add data to a submission about the actual score values pending full verification
  * 
- * @param {integer} submitId discord snowflake of the submission message
+ * @param {*} submitId discord snowflake of the submission message
  * @param {*} data 
  */
 exports.submitData = (submitId, data) => {
