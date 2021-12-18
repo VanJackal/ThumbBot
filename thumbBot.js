@@ -6,7 +6,6 @@ const client = new Discord.Client({intents: intents});
 
 const config = require("./config.json");
 const TOKEN = require("./token.json").TOKEN;
-const PREFIX = config.prefix;
 const {API} = require("./util")
 
 logger.info("Startup")
