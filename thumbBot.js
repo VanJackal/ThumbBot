@@ -1,13 +1,13 @@
 const Discord = require("discord.js");
-const { logger } = require('./logging')
+const {logger} = require('./logging')
 
 const intents = ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_MESSAGES']
-const client = new Discord.Client({ intents: intents });
+const client = new Discord.Client({intents: intents});
 
 const config = require("./config.json");
 const TOKEN = require("./token.json").TOKEN;
 const PREFIX = config.prefix;
-const { API } = require("./util")
+const {API} = require("./util")
 
 logger.info("Startup")
 
@@ -15,29 +15,21 @@ client.on('ready', () => {
     logger.info(`Logged in as ${client.user.tag}!`);
 });
 
-/**
- * Process Submit Channel
- */
 client.on('messageCreate', async message => {
     if (userIsThumbBot(message.author.id)) return;
     const member = await getGuildMember(message.author.id);
     if (!member) return;
-
-    if (isSubmitChannel(message.channelId) && await memberHasRole(config.playerRole, member)) {
-        await processSubmission(message)
-    }
-});//TODO on message could be moved to single on message function with a switch on channel id
-
-/**
- * Process Verify Channel
- */
-client.on('messageCreate', async (message) => {
-    if (userIsThumbBot(message.author.id)) return;
-    const member = await getGuildMember(message.author.id);
-    if (!member) return;
-
-    if (isVerifyChannel(message.channelId) && await memberHasRole(config.adminRole, member) && message.reference) {
-        await processVerifyMessage(message)
+    switch (message.channelId) {
+        case config.channelVerify://Todo move the conditionals into the processing functions
+            logger.log('trace',"Message Creation Switch Verify")
+            if (memberHasRole(config.adminRole, member)) await processVerifyMessage(message)
+            break
+        case config.channelSubmit:
+            logger.log('trace',"Message Creation Switch Submit")
+            if (memberHasRole(config.playerRole, member)) await processSubmission(message)
+            break
+        default:
+            break
     }
 })
 
@@ -53,29 +45,33 @@ client.on('interactionCreate', interaction => {
 })
 
 const processSubmission = async (message) => {//TODO Move these functions to a library file
+    //TODO add role checking to this function
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
     body = message.content//TODO this should be an object containing the content and attachments (validity should also be checked)
     await forwardMsgToVerify(message);//TODO pull some of the logic out of this function and into process submit
-    API.submitNew(message.id,message.content,message.author.id)
+    API.submitNew(message.id, message.content, message.author.id)
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
 }
 
-const processVerifyMessage = async (message) => {
+const processVerifyMessage = async (message) => {//TODO add role checking to this
     const submitValue = parseInt(message.content)//TODO these 2 vars should not be in this function they should be passed to it or it should pass them to another function
     const submitId = message.reference.messageId
     if (!submitValue) {
         console.log("invalid input")
         //TODO Notify moderator of bad input
     }
-    API.submitData(submitId,submitValue)
+    API.submitData(submitId, submitValue)
 
     const channel = message.channel
     const submission = await channel.messages.fetch(message.reference.messageId)
 
     let comp = new Discord.MessageActionRow()
-    comp.addComponents(new Discord.MessageButton({ label: "Verify", customId: "verifyButton", style: "PRIMARY" }))
+    comp.addComponents(new Discord.MessageButton({label: "Verify", customId: "verifyButton", style: "PRIMARY"}))
 
-    await submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
+    await submission.reply({
+        content: `Verify the value \`${message.content}\` for this submission?`,
+        components: [comp]
+    })
 }
 
 const forwardMsgToVerify = async (message) => {
@@ -90,21 +86,14 @@ const forwardMsgToVerify = async (message) => {
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
 }
 
-const isSubmitChannel = (channelId) => {
-    return config.channelsSubmit.includes(channelId)
-}
-
-const isVerifyChannel = (channelId) => {
-    return config.channelVerify == channelId
-}
-
-const memberHasRole = async (roleId, member) => {
+const memberHasRole = (roleId, member) => {
+    logger.log('trace',`memberHasRole call - member: ${member.id} role: ${roleId}`)
     return member.roles.cache.has(roleId)
 }
 
 /**
- * 
- * @param {Discord.UserResolvable} userId 
+ *
+ * @param {Discord.UserResolvable} userId
  * @returns {Discord.GuildMember}
  */
 const getGuildMember = async (userId) => {
