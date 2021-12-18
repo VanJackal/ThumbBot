@@ -1,9 +1,9 @@
 const { logger } = require('../../logging')
-
+require('discord.js');
 /**
  * Verify the value currently pending in a submission
  * 
- * @param {int} submitId snowflake of the submission
+ * @param {*} submitId snowflake of the submission
  */
 exports.verifySubmission = (submitId) => {
     logger.info(`Verified Submission #${submitId}`)
@@ -13,9 +13,9 @@ exports.verifySubmission = (submitId) => {
 /**
  * submit a new message/submission to the api
  * 
- * @param {int} submitId discord snowflake of the submission message
+ * @param {*} submitId discord snowflake of the submission message
  * @param {string} body body of the submission message
- * @param {int} userId discord user snowflake
+ * @param {*} userId discord user snowflake
  */
 exports.submitNew = (submitId, body, userId) => {
     logger.info(`New Submission Created - user:${userId} submitId:${submitId} body:${body}`)

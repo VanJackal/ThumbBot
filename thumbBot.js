@@ -19,11 +19,12 @@ client.on('ready', () => {
  * Process Submit Channel
  */
 client.on('messageCreate', async message => {
-    if (message.author.id == client.user.id) return;//dont process messages from the bot
-    member = await getGuildMember(message.author.id);
+    if (userIsThumbBot(message.author.id)) return;
+    const member = await getGuildMember(message.author.id);
+    if (!member) return;
 
-    if (isSubmitChannel(message.channelId) && memberHasRole(config.playerRole, member)) {
-        processSubmission(message)
+    if (isSubmitChannel(message.channelId) && await memberHasRole(config.playerRole, member)) {
+        await processSubmission(message)
     }
 });//TODO on message could be moved to single on message function with a switch on channel id
 
@@ -31,10 +32,11 @@ client.on('messageCreate', async message => {
  * Process Verify Channel
  */
 client.on('messageCreate', async (message) => {
-    if (message.author.id == client.user.id || !message.guild) return;//dont process messages from the bot or DM's
-    member = await getGuildMember(message.author.id);
+    if (userIsThumbBot(message.author.id)) return;
+    const member = await getGuildMember(message.author.id);
+    if (!member) return;
 
-    if (isVerifyChannel(message.channelId) && memberHasRole(config.adminRole, member) && message.reference) {
+    if (isVerifyChannel(message.channelId) && await memberHasRole(config.adminRole, member) && message.reference) {
         await processVerifyMessage(message)
     }
 })
@@ -59,8 +61,8 @@ const processSubmission = async (message) => {//TODO Move these functions to a l
 }
 
 const processVerifyMessage = async (message) => {
-    submitValue = parseInt(message.content)//TODO these 2 vars should not be in this function they should be passed to it or it should pass them to another function
-    submitId = message.reference.messageId
+    const submitValue = parseInt(message.content)//TODO these 2 vars should not be in this function they should be passed to it or it should pass them to another function
+    const submitId = message.reference.messageId
     if (!submitValue) {
         console.log("invalid input")
         //TODO Notify moderator of bad input
@@ -73,7 +75,7 @@ const processVerifyMessage = async (message) => {
     let comp = new Discord.MessageActionRow()
     comp.addComponents(new Discord.MessageButton({ label: "Verify", customId: "verifyButton", style: "PRIMARY" }))
 
-    submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
+    await submission.reply({ content: `Verify the value \`${message.content}\` for this submission?`, components: [comp] })
 }
 
 const forwardMsgToVerify = async (message) => {
@@ -107,12 +109,15 @@ const memberHasRole = async (roleId, member) => {
  */
 const getGuildMember = async (userId) => {
     const guild = await client.guilds.fetch(config.guild)
-    const member = await guild.members.fetch(userId)
-    return member
+    return await guild.members.fetch(userId)
+}
+
+const userIsThumbBot = (userId) => {
+    return client.user.id == userId
 }
 
 const getAttachmentsString = (attachments) => {
-    attachStr = ""
+    let attachStr = ""
 
     if (attachments.size > 0) {
         attachments.forEach(attach => {
