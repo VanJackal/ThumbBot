@@ -19,7 +19,7 @@ client.on('messageCreate', async message => {
     const member = await getGuildMember(message.author.id);
     if (!member) return;
     switch (message.channelId) {
-        case config.channelVerify://Todo move the conditionals into the processing functions
+        case config.channelVerify:
             logger.log('trace',"Message Creation Switch Verify")
             if (memberHasRole(config.adminRole, member)) await processVerifyMessage(message)
             break
@@ -43,13 +43,23 @@ client.on('interactionCreate', interaction => {
     interaction.reply(content)
 })
 
-const processSubmission = async (message) => {//TODO Move these functions to a library file
-    //TODO add role checking to this function
+const processSubmission = async (message) => {
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
-    body = message.content//TODO this should be an object containing the content and attachments (validity should also be checked)
-    await forwardMsgToVerify(message);//TODO pull some of the logic out of this function and into process submit
+    await forwardMsgToVerify(message);
     API.submitNew(message.id, message.content, message.author.id)
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
+}
+
+const forwardMsgToVerify = async (message) => {
+    logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
+
+    const channel = await client.channels.fetch(config.channelVerify);
+    let msg = `<@${message.author.id}> **Sent:**\`\`\`${message.content}\`\`\`**With Attachments:**\n`;//TODO convert to embed
+    msg += getAttachmentsString(message.attachments)
+
+    logger.log("trace", `Sending ${message.id} to Verify Channel`);
+    const newMsg = await channel.send(msg);
+    logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
 }
 
 const processVerifyMessage = async (message) => {//TODO add role checking to this
@@ -73,18 +83,6 @@ const processVerifyMessage = async (message) => {//TODO add role checking to thi
     })
 }
 
-const forwardMsgToVerify = async (message) => {
-    logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
-
-    const channel = await client.channels.fetch(config.channelVerify);
-    let msg = `<@${message.author.id}> **Sent:**\`\`\`${message.content}\`\`\`**With Attachments:**\n`;//TODO convert to embed
-    msg += getAttachmentsString(message.attachments)
-
-    logger.log("trace", `Sending ${message.id} to Verify Channel`);
-    newMsg = await channel.send(msg);
-    logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
-}
-
 const memberHasRole = (roleId, member) => {
     logger.log('trace',`memberHasRole call - member: ${member.id} role: ${roleId}`)
     return member.roles.cache.has(roleId)
@@ -101,7 +99,7 @@ const getGuildMember = async (userId) => {
 }
 
 const userIsThumbBot = (userId) => {
-    return client.user.id == userId
+    return client.user.id.toString() === userId
 }
 
 const getAttachmentsString = (attachments) => {
