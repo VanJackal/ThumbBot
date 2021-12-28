@@ -62,15 +62,19 @@ const forwardMsgToVerify = async (message) => {
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
 }
 
-const processVerifyMessage = async (message) => {//TODO add role checking to this
-    const submitValue = parseInt(message.content)//TODO these 2 vars should not be in this function they should be passed to it or it should pass them to another function
-    const submitId = message.reference.messageId
-    if (!submitValue) {
-        console.log("invalid input")
+const processVerifyMessage = async (message) => {
+    const submitValue = parseInt(message.content)
+    if (isNaN(submitValue)) {
+        logger.log('trace',`VerifyProcessing Invalid Submission Value - \"${message.content}\"`)
         //TODO Notify moderator of bad input
+    } else {
+        const submitId = message.reference.messageId
+        API.submitData(submitId, submitValue)
+        await sendVerifyMessage(message)
     }
-    API.submitData(submitId, submitValue)
+}
 
+async function sendVerifyMessage(message) {
     const channel = message.channel
     const submission = await channel.messages.fetch(message.reference.messageId)
 
