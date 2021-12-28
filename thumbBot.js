@@ -65,8 +65,8 @@ const forwardMsgToVerify = async (message) => {
 const processVerifyMessage = async (message) => {
     const submitValue = parseInt(message.content)
     if (isNaN(submitValue)) {
-        logger.log('trace',`VerifyProcessing Invalid Submission Value - \"${message.content}\"`)
-        //TODO Notify moderator of bad input
+        logger.log('debug',`VerifyProcessing Invalid Submission Value - \"${message.content}\"`)
+        await message.reply(`\"${message.content}\" is not a valid submission value.`)
     } else {
         const submitId = message.reference.messageId
         API.submitData(submitId, submitValue)
