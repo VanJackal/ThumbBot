@@ -63,12 +63,17 @@ const forwardMsgToVerify = async (message) => {
 }
 
 const processVerifyMessage = async (message) => {
+    const submitId = message.reference.messageId
+    const submission = API.getSubmission(submitId)
     const submitValue = parseInt(message.content)
-    if (isNaN(submitValue)) {
+
+    if(!submission){
+        logger.log('debug',`Message[${submitId}] id not a submission (not found in DB)`)
+        await message.reply(`The message you replied to is not a submission.`)
+    } else if (isNaN(submitValue)) {
         logger.log('debug',`VerifyProcessing Invalid Submission Value - \"${message.content}\"`)
         await message.reply(`\"${message.content}\" is not a valid submission value.`)
     } else {
-        const submitId = message.reference.messageId
         API.submitData(submitId, submitValue)
         await sendVerifyMessage(message)
     }
