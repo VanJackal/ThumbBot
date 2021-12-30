@@ -8,6 +8,8 @@ const config = require("./config.json");
 const TOKEN = require("./token.json").TOKEN;
 const {API} = require("./util")
 
+const EMBED_VERIFY_COLOR = "#00ff7b"
+
 logger.info("Startup")
 
 client.on('ready', () => {
@@ -54,16 +56,23 @@ const forwardMsgToVerify = async (message) => {
     logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
 
     const channel = await client.channels.fetch(config.channelVerify);
-    let msg = `<@${message.author.id}> **Sent:**\`\`\`${message.content}\`\`\`**With Attachments:**\n`;//TODO convert to embed
-    msg += getAttachmentsString(message.attachments)
+    const attach = getAttachmentsEmbed(message.attachments)
+    const embed = new Discord.MessageEmbed()
+        .setAuthor(`${message.author.tag} - (${message.author.id})`)
+        .addField("Message Content", message.content)
+        .addFields(attach)
+        .setColor(EMBED_VERIFY_COLOR)
+        .setTimestamp()
+        .setFooter('ThumbBot Verification')//Todo add Icon for thumbBot to this
 
     logger.log("trace", `Sending ${message.id} to Verify Channel`);
-    const newMsg = await channel.send(msg);
+    const newMsg = await channel.send({embeds:[embed]});
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
 }
 
 const processVerifyMessage = async (message) => {
-    const submitId = message.reference.messageId
+    const submitId = message.reference?.messageId
+    if (!submitId) return;
     const submission = API.getSubmission(submitId)
     const submitValue = parseInt(message.content)
 
@@ -111,18 +120,19 @@ const userIsThumbBot = (userId) => {
     return client.user.id.toString() === userId
 }
 
-const getAttachmentsString = (attachments) => {
-    let attachStr = ""
+const getAttachmentsEmbed = (attachments) => {
+    let attachEmbedComp = []
 
+    let counter = 1
     if (attachments.size > 0) {
         attachments.forEach(attach => {
-            attachStr += `${attach.url}\n`
+            attachEmbedComp.push({name:`Attachment ${counter++}:`, value:attach.url})
         });
     } else {
-        attachStr += "*None*"
+        attachEmbedComp.push({name:"Attachments", value:"No Attachments"})
     }
 
-    return attachStr
+    return attachEmbedComp
 }
 
 client.login(TOKEN);
