@@ -47,8 +47,8 @@ client.on('interactionCreate', interaction => {
 
 const processSubmission = async (message) => {
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
-    await forwardMsgToVerify(message);
-    API.submitNew(message.id, message.content, message.author.id)
+    const submission = await forwardMsgToVerify(message);
+    API.submitNew(submission.id, message.content, message.author.id)
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
 }
 
@@ -68,6 +68,7 @@ const forwardMsgToVerify = async (message) => {
     logger.log("trace", `Sending ${message.id} to Verify Channel`);
     const newMsg = await channel.send({embeds:[embed]});
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
+    return newMsg
 }
 
 const processVerifyMessage = async (message) => {
