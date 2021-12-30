@@ -22,11 +22,11 @@ client.on('messageCreate', async message => {
     if (!member) return;
     switch (message.channelId) {
         case config.channelVerify:
-            logger.log('trace',"Message Creation Switch Verify")
+            logger.log('trace', "Message Creation Switch Verify")
             if (memberHasRole(config.adminRole, member)) await processVerifyMessage(message)
             break
         case config.channelSubmit:
-            logger.log('trace',"Message Creation Switch Submit")
+            logger.log('trace', "Message Creation Switch Submit")
             if (memberHasRole(config.playerRole, member)) await processSubmission(message)
             break
         default:
@@ -34,15 +34,24 @@ client.on('messageCreate', async message => {
     }
 })
 
+function processVerifyButton(interaction) {
+    const submissionId = interaction.message.reference.messageId
+    API.verifySubmission(submissionId)
+    const value = API.getSubmission(submissionId).value
+    const content = `\`${value}\` has been verified for submission \`${submissionId}\``
+    interaction.reply(content)
+}
+
 /**
  * Process Buttons
  */
 client.on('interactionCreate', interaction => {
     if (!interaction.isButton()) return;
-    const submissionId = interaction.message.reference.messageId
-    API.verifySubmission(submissionId)
-    const content = `\`{value}\` has been verified for submission \`${submissionId}\``
-    interaction.reply(content)
+    switch (interaction.customId) {
+        case "buttonVerify":
+            processVerifyButton(interaction);
+            break
+    }
 })
 
 const processSubmission = async (message) => {
@@ -66,7 +75,7 @@ const forwardMsgToVerify = async (message) => {
         .setFooter('ThumbBot Verification')//Todo add Icon for thumbBot to this
 
     logger.log("trace", `Sending ${message.id} to Verify Channel`);
-    const newMsg = await channel.send({embeds:[embed]});
+    const newMsg = await channel.send({embeds: [embed]});
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
     return newMsg
 }
@@ -77,11 +86,11 @@ const processVerifyMessage = async (message) => {
     const submission = API.getSubmission(submitId)
     const submitValue = parseInt(message.content)
 
-    if(!submission){
-        logger.log('debug',`Message[${submitId}] id not a submission (not found in DB)`)
+    if (!submission) {
+        logger.log('debug', `Message[${submitId}] id not a submission (not found in DB)`)
         await message.reply(`The message you replied to is not a submission.`)
     } else if (isNaN(submitValue)) {
-        logger.log('debug',`VerifyProcessing Invalid Submission Value - \"${message.content}\"`)
+        logger.log('debug', `VerifyProcessing Invalid Submission Value - \"${message.content}\"`)
         await message.reply(`\"${message.content}\" is not a valid submission value.`)
     } else {
         API.submitData(submitId, submitValue)
@@ -94,7 +103,7 @@ async function sendVerifyMessage(message) {
     const submission = await channel.messages.fetch(message.reference.messageId)
 
     let comp = new Discord.MessageActionRow()
-    comp.addComponents(new Discord.MessageButton({label: "Verify", customId: "verifyButton", style: "PRIMARY"}))
+    comp.addComponents(new Discord.MessageButton({label: "Verify", customId: "buttonVerify", style: "PRIMARY"}))
 
     await submission.reply({
         content: `Verify the value \`${message.content}\` for this submission?`,
@@ -103,7 +112,7 @@ async function sendVerifyMessage(message) {
 }
 
 const memberHasRole = (roleId, member) => {
-    logger.log('trace',`memberHasRole call - member: ${member.id} role: ${roleId}`)
+    logger.log('trace', `memberHasRole call - member: ${member.id} role: ${roleId}`)
     return member.roles.cache.has(roleId)
 }
 
@@ -127,10 +136,10 @@ const getAttachmentsEmbed = (attachments) => {
     let counter = 1
     if (attachments.size > 0) {
         attachments.forEach(attach => {
-            attachEmbedComp.push({name:`Attachment ${counter++}:`, value:attach.url})
+            attachEmbedComp.push({name: `Attachment ${counter++}:`, value: attach.url})
         });
     } else {
-        attachEmbedComp.push({name:"Attachments", value:"No Attachments"})
+        attachEmbedComp.push({name: "Attachments", value: "No Attachments"})
     }
 
     return attachEmbedComp
