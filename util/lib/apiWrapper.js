@@ -2,11 +2,13 @@ const {logger} = require('../../logging')
 require('discord.js');
 
 class Submission {
-    constructor(id, body, userId, value = null) {
+    constructor(id, body, userId, timestamp, value = null, flagged = false) {
         this.id = id
         this.body = body
         this.userId = userId
         this.value = value
+        this.timestamp = timestamp
+        this.flagged = flagged
     }
 }
 
@@ -26,9 +28,10 @@ exports.verifySubmission = (submitId) => {
  * @param {*} submitId discord snowflake of the submission message
  * @param {string} body body of the submission message
  * @param {*} userId discord user snowflake
+ * @param submitTime
  */
-exports.submitNew = (submitId, body, userId) => {
-    const submission = new Submission(submitId, body, userId)
+exports.submitNew = (submitId, body, userId, submitTime) => {
+    const submission = new Submission(submitId, body, userId,submitTime)
 
     logger.info(`New Submission Created - user:${userId} submitId:${submitId} body:${body}`)
     logger.warn("submitNew - NotImplemented")
@@ -54,6 +57,11 @@ exports.submitData = (submitId, data) => {
 exports.getSubmission = (submitId) => {
     logger.info(`Getting Submission[${submitId}]`)
     logger.warn("getSubmission - NotImplemented")
-    const submission = new Submission(-1, "API Not Implemented", "", -1)
+    const submission = new Submission(-1, "API Not Implemented", "UserId","Sometime", -1)
     return submission
+}
+
+exports.flagSubmission = (submissionId) => {
+    logger.info(`Flagging Submission[${submissionId}]`)
+    logger.warn("flagSubmission - NotImplemented")
 }

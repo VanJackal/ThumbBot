@@ -36,20 +36,38 @@ client.on('messageCreate', async message => {
 
 function processVerifyButton(interaction) {
     const submissionId = interaction.message.reference.messageId
+    logger.info(`buttonVerify called on submission - ${submissionId}`)
     API.verifySubmission(submissionId)
     const value = API.getSubmission(submissionId).value
     const content = `\`${value}\` has been verified for submission \`${submissionId}\``
     interaction.reply(content)
 }
 
+async function processFlagButton(interaction) {
+    const submissionId = interaction.message.id
+    logger.info(`buttonFlag called on submission - ${submissionId}`)
+    API.flagSubmission(submissionId)
+    const submission = API.getSubmission(submissionId)
+    const content = `Your submission \`${submissionId} - submitted on: {datetime}\` has been flagged for review, please contact a moderator.`
+    await messageUser(submission.userId,content)
+    interaction.reply({content:`Submission \`${submissionId}\` Flagged, <@${submission.userId}> has been notified of the flagged submission.`})
+}
+
 /**
  * Process Buttons
  */
-client.on('interactionCreate', interaction => {
+client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
     switch (interaction.customId) {
         case "buttonVerify":
             processVerifyButton(interaction);
+            break
+        case "buttonFlag":
+            await processFlagButton(interaction);
+            break
+        default:
+            logger.log('warn', `ButtonId ${interaction.customId} called but not implemented.`)
+            await interaction.reply({ephemeral:true,content:`Button *${interaction.customId}* is either not implemented or something is very broken **contact an admin**.`})
             break
     }
 })
@@ -57,25 +75,37 @@ client.on('interactionCreate', interaction => {
 const processSubmission = async (message) => {
     logger.debug(`Processing Submission - msgid:${message.id} content:\"${message.content}\"`)
     const submission = await forwardMsgToVerify(message);
-    API.submitNew(submission.id, message.content, message.author.id)
+    API.submitNew(submission.id, message.content, message.author.id, message.createdTimestamp)
     message.delete().then(msg => logger.debug(`Deleted Submission Message - msgid:${msg.id}`));
+}
+
+function getSubmissionEmbed(message) {
+    const attach = getAttachmentsEmbed(message.attachments)
+
+    return new Discord.MessageEmbed()
+        .setAuthor(`${message.author.tag} - (${message.author.id})`)
+        .addField("Message Content", message.content)
+        .addFields(attach)
+        .setColor(EMBED_VERIFY_COLOR)
+        .setTimestamp()
+        .setFooter('ThumbBot Verification');//Todo add Icon for thumbBot to this
+}
+
+function getSubmissionButtons() {
+    let comp = new Discord.MessageActionRow()
+    comp.addComponents(new Discord.MessageButton({label: "Flag", customId: "buttonFlag", style: "DANGER"}))
+    return comp
 }
 
 const forwardMsgToVerify = async (message) => {
     logger.debug(`Forwarding Submission to Verify - msgid:${message.id}`)
 
     const channel = await client.channels.fetch(config.channelVerify);
-    const attach = getAttachmentsEmbed(message.attachments)
-    const embed = new Discord.MessageEmbed()
-        .setAuthor(`${message.author.tag} - (${message.author.id})`)
-        .addField("Message Content", message.content)
-        .addFields(attach)
-        .setColor(EMBED_VERIFY_COLOR)
-        .setTimestamp()
-        .setFooter('ThumbBot Verification')//Todo add Icon for thumbBot to this
+    const embed = getSubmissionEmbed(message);
+    const buttons = getSubmissionButtons();
 
     logger.log("trace", `Sending ${message.id} to Verify Channel`);
-    const newMsg = await channel.send({embeds: [embed]});
+    const newMsg = await channel.send({embeds: [embed], components:[buttons]});
     logger.debug(`Submission sent to Verify - msgid:${message.id} -> ${newMsg.id}`)
     return newMsg
 }
@@ -143,6 +173,11 @@ const getAttachmentsEmbed = (attachments) => {
     }
 
     return attachEmbedComp
+}
+
+async function messageUser(userId, message){//Todo get this to message and send warnings on invalid userids/failed messages
+    logger.warn(`messageUser Not Implemented`)
+    logger.info(`Sending user[${userId}] message: ${message}`)
 }
 
 client.login(TOKEN);
