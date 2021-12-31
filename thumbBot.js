@@ -60,8 +60,12 @@ async function processVerifyButton(interaction) {
     const submissionId = interaction.message.reference.messageId
     logger.info(`buttonVerify called on submission - ${submissionId}`)
     API.verifySubmission(submissionId)
-    const value = API.getSubmission(submissionId).value
+    const submission = API.getSubmission(submissionId)
+    const value = submission.value
+
     const content = `\`${value}\` has been verified for submission \`${submissionId}\``
+    const dmContent = `Your submission \`${submissionId}\` - submitted on: \`${submission.timestamp}\` has been verified with the value: \`${value}\``
+    await messageUser(submission.userId,dmContent)
     await interaction.reply(content)
 }
 
@@ -74,7 +78,7 @@ async function processFlagButton(interaction) {
     logger.info(`buttonFlag called on submission - ${submissionId}`)
     API.flagSubmission(submissionId)
     const submission = API.getSubmission(submissionId)
-    const content = `Your submission \`${submissionId} - submitted on: {datetime}\` has been flagged for review, please contact a moderator.`
+    const content = `Your submission \`${submissionId}\` - submitted on: \`${submission.timestamp}\` has been flagged for review, please contact a moderator.`
     await messageUser(submission.userId,content)
     await interaction.reply({content:`Submission \`${submissionId}\` Flagged, <@${submission.userId}> has been notified of the flagged submission.`})
 }
@@ -141,6 +145,7 @@ const processVerifyMessage = async (message) => {
     const submitId = message.reference?.messageId
     if (!submitId) return;
     const submission = API.getSubmission(submitId)
+    //TODO add check that the submission doesnt already have a pending value
     const submitValue = parseInt(message.content)
 
     if (!submission) {

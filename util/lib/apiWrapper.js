@@ -2,13 +2,15 @@ const {logger} = require('../../logging')
 require('discord.js');
 
 class Submission {
-    constructor(id, body, userId, timestamp, value = null, flagged = false) {
+    constructor(id, body, userId, timestamp, value = null) {
         this.id = id
         this.body = body
         this.userId = userId
         this.value = value
         this.timestamp = timestamp
-        this.flagged = flagged
+        this.flagged = false
+        this.pending = false
+        this.verified = false
     }
 }
 
