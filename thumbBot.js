@@ -49,7 +49,7 @@ async function disableButtons(buttonInteraction) {
             }
         })
     })
-    //await buttonInteraction.update({components:rows})//TODO get this working
+    await buttonInteraction.message.edit({components:rows})
 }
 
 async function processVerifyButton(interaction) {
@@ -59,7 +59,6 @@ async function processVerifyButton(interaction) {
     const value = API.getSubmission(submissionId).value
     const content = `\`${value}\` has been verified for submission \`${submissionId}\``
     interaction.reply(content)
-    await disableButtons(interaction)
 }
 
 async function processFlagButton(interaction) {
@@ -89,6 +88,7 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ephemeral:true,content:`Button *${interaction.customId}* is either not implemented or something is very broken **contact an admin**.`})
             break
     }
+    await disableButtons(interaction)
 })
 
 const processSubmission = async (message) => {
