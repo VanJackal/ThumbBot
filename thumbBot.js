@@ -52,15 +52,23 @@ async function disableButtons(buttonInteraction) {
     await buttonInteraction.message.edit({components:rows})
 }
 
+/**
+ *
+ * @param {Discord.ButtonInteraction} interaction
+ */
 async function processVerifyButton(interaction) {
     const submissionId = interaction.message.reference.messageId
     logger.info(`buttonVerify called on submission - ${submissionId}`)
     API.verifySubmission(submissionId)
     const value = API.getSubmission(submissionId).value
     const content = `\`${value}\` has been verified for submission \`${submissionId}\``
-    interaction.reply(content)
+    await interaction.reply(content)
 }
 
+/**
+ *
+ * @param {Discord.ButtonInteraction} interaction
+ */
 async function processFlagButton(interaction) {
     const submissionId = interaction.message.id
     logger.info(`buttonFlag called on submission - ${submissionId}`)
@@ -68,7 +76,7 @@ async function processFlagButton(interaction) {
     const submission = API.getSubmission(submissionId)
     const content = `Your submission \`${submissionId} - submitted on: {datetime}\` has been flagged for review, please contact a moderator.`
     await messageUser(submission.userId,content)
-    interaction.reply({content:`Submission \`${submissionId}\` Flagged, <@${submission.userId}> has been notified of the flagged submission.`})
+    await interaction.reply({content:`Submission \`${submissionId}\` Flagged, <@${submission.userId}> has been notified of the flagged submission.`})
 }
 
 /**
