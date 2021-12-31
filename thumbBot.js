@@ -34,13 +34,32 @@ client.on('messageCreate', async message => {
     }
 })
 
-function processVerifyButton(interaction) {
+/**
+ *
+ * @param {Discord.ButtonInteraction} buttonInteraction
+ */
+async function disableButtons(buttonInteraction) {
+    const rows = buttonInteraction.message.components
+    logger.debug(`Disabling Buttons for message[${buttonInteraction.message.id}]`)
+    rows.forEach(row => {
+        row.components.forEach( comp => {
+            if (comp.type === "BUTTON"){
+                logger.log('trace', `Disabling button[${comp.customId}] on message[${buttonInteraction.message.id}]`)
+                comp.setDisabled(true)
+            }
+        })
+    })
+    //await buttonInteraction.update({components:rows})//TODO get this working
+}
+
+async function processVerifyButton(interaction) {
     const submissionId = interaction.message.reference.messageId
     logger.info(`buttonVerify called on submission - ${submissionId}`)
     API.verifySubmission(submissionId)
     const value = API.getSubmission(submissionId).value
     const content = `\`${value}\` has been verified for submission \`${submissionId}\``
     interaction.reply(content)
+    await disableButtons(interaction)
 }
 
 async function processFlagButton(interaction) {
@@ -60,7 +79,7 @@ client.on('interactionCreate', async interaction => {
     if (!interaction.isButton()) return;
     switch (interaction.customId) {
         case "buttonVerify":
-            processVerifyButton(interaction);
+            await processVerifyButton(interaction);
             break
         case "buttonFlag":
             await processFlagButton(interaction);
