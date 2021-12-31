@@ -57,7 +57,7 @@ exports.submitData = (submitId, data) => {
 exports.getSubmission = (submitId) => {
     logger.info(`Getting Submission[${submitId}]`)
     logger.warn("getSubmission - NotImplemented")
-    const submission = new Submission(-1, "API Not Implemented", "UserId","Sometime", -1)
+    const submission = new Submission(-1, "API Not Implemented", "153227917084721153","Sometime", -1)
     return submission
 }
 

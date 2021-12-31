@@ -202,9 +202,21 @@ const getAttachmentsEmbed = (attachments) => {
     return attachEmbedComp
 }
 
+/**
+ *
+ * @param {Discord.UserResolvable} userId
+ * @param {String} message
+ * @returns {Promise<void>}
+ */
 async function messageUser(userId, message){//Todo get this to message and send warnings on invalid userids/failed messages
-    logger.warn(`messageUser Not Implemented`)
     logger.info(`Sending user[${userId}] message: ${message}`)
+    const user = await client.users.fetch(userId)
+    if (user) {
+        const dmChannel = user.dmChannel || await user.createDM()
+        await dmChannel.send(message)
+    } else {
+        logger.warn(`Cannot message user[${userId}]: Unable to fetch user`)
+    }
 }
 
 client.login(TOKEN);
