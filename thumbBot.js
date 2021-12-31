@@ -145,7 +145,10 @@ const processVerifyMessage = async (message) => {
     const submitId = message.reference?.messageId
     if (!submitId) return;
     const submission = API.getSubmission(submitId)
-    //TODO add check that the submission doesnt already have a pending value
+    if (submission.pending) {
+        message.reply(`Submission[${submitId}] already has a pending value`)
+        return
+    }
     const submitValue = parseInt(message.content)
 
     if (!submission) {
