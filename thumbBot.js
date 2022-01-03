@@ -36,20 +36,20 @@ client.on('messageCreate', async message => {
 
 /**
  *
- * @param {Discord.ButtonInteraction} buttonInteraction
+ * @param {Discord.Message} message
  */
-async function disableButtons(buttonInteraction) {
-    const rows = buttonInteraction.message.components
-    logger.debug(`Disabling Buttons for message[${buttonInteraction.message.id}]`)
+async function disableButtons(message) {
+    const rows = message.components
+    logger.debug(`Disabling Buttons for message[${message.id}]`)
     rows.forEach(row => {
         row.components.forEach( comp => {
             if (comp.type === "BUTTON"){
-                logger.log('trace', `Disabling button[${comp.customId}] on message[${buttonInteraction.message.id}]`)
+                logger.log('trace', `Disabling button[${comp.customId}] on message[${message.id}]`)
                 comp.setDisabled(true)
             }
         })
     })
-    await buttonInteraction.message.edit({components:rows})
+    await message.edit({components:rows})
 }
 
 /**
@@ -100,7 +100,7 @@ client.on('interactionCreate', async interaction => {
             await interaction.reply({ephemeral:true,content:`Button *${interaction.customId}* is either not implemented or something is very broken **contact an admin**.`})
             break
     }
-    await disableButtons(interaction)
+    await disableButtons(interaction.message)
 })
 
 const processSubmission = async (message) => {
