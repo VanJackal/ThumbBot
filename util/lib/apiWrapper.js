@@ -67,3 +67,9 @@ exports.flagSubmission = (submissionId) => {
     logger.info(`Flagging Submission[${submissionId}]`)
     logger.warn("flagSubmission - NotImplemented")
 }
+
+exports.denyPending = (submissionId) => {
+    logger.info(`Denying pending value for Submission[${submissionId}]`)
+    logger.warn("denyPending - NotImplemented")
+}
+

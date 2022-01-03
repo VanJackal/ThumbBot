@@ -98,6 +98,18 @@ async function processFlagButton(interaction) {
 }
 
 /**
+ *
+ * @param {Discord.ButtonInteraction} interaction
+ * @returns {Promise<void>}
+ */
+async function processDenyButton(interaction) {
+    const submissionId = interaction.message.reference.id
+    logger.info(`buttonDeny called on submission - ${submissionId}`)
+    API.denyPending(submissionId)
+    await interaction.reply(`Value for submission \`${submissionId}\` has been **denied**.`)
+}
+
+/**
  * Process Buttons
  */
 client.on('interactionCreate', async interaction => {
@@ -108,6 +120,9 @@ client.on('interactionCreate', async interaction => {
             break
         case "buttonFlag":
             await processFlagButton(interaction);
+            break
+        case "buttonDeny":
+            await processDenyButton(interaction);
             break
         default:
             logger.log('warn', `ButtonId ${interaction.customId} called but not implemented.`)
@@ -181,13 +196,19 @@ async function sendVerifyMessage(message) {
     const channel = message.channel
     const submission = await channel.messages.fetch(message.reference.messageId)
 
-    let comp = new Discord.MessageActionRow()
-    comp.addComponents(new Discord.MessageButton({label: "Verify", customId: "buttonVerify", style: "PRIMARY"}))
+    let comp = getVerifyButtons()
 
     await submission.reply({
         content: `Verify the value \`${message.content}\` for this submission?`,
         components: [comp]
     })
+}
+
+function getVerifyButtons() {
+    let comp = new Discord.MessageActionRow()
+    comp.addComponents(new Discord.MessageButton({label: "Verify", customId: "buttonVerify", style: "PRIMARY"}))
+    comp.addComponents(new Discord.MessageButton({label: "Deny", customId: "buttonDeny", style: "DANGER"}))
+    return comp
 }
 
 const memberHasRole = (roleId, member) => {
