@@ -53,6 +53,19 @@ async function disableButtons(message) {
 }
 
 /**
+ * disables buttons on a message from its id, if channel isn't set it will assume the message is in channelVerify
+ *
+ * @param {Discord.Snowflake} messageId
+ * @param {Discord.TextChannel} channel
+ * @returns {Promise<void>}
+ */
+async function disableButtonsFromId(messageId,channel= null){
+    channel = channel ?? await client.channels.fetch(config.channelVerify)
+    const message = await channel.messages.fetch(messageId)
+    await disableButtons(message)
+}
+
+/**
  *
  * @param {Discord.ButtonInteraction} interaction
  */
@@ -67,6 +80,7 @@ async function processVerifyButton(interaction) {
     const dmContent = `Your submission \`${submissionId}\` - submitted on: \`${submission.timestamp}\` has been verified with the value: \`${value}\``
     await messageUser(submission.userId,dmContent)
     await interaction.reply(content)
+    await disableButtonsFromId(submissionId)
 }
 
 /**
