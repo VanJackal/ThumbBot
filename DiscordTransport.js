@@ -9,6 +9,11 @@ const COLOR_DEBUG = "#397237"
 const COLOR_TRACE = "#595959"
 const COLOR_DEFAULT = "#595959"
 
+const TECHS = [
+    "153227917084721153",
+    "749970165600616539"
+]
+
 /**
  * @param client {Discord.Client}
  * @param channelIds {string[]}
@@ -38,15 +43,15 @@ class DiscordTransport extends Transport {
         })
 
         const embed = getEmbed(info.level, info.message, info.timestamp)
-        this.sendToLogging(embed)
+        const additional = getAdditionalMsg(info.level)
+        this.sendToLogging(embed, additional)
 
         callback()
     }
 
-    sendToLogging(embed) {
+    sendToLogging(embed, additional) {
         this.channels.forEach(channel => {
-            console.log(channel)
-            channel.send({embeds:[embed]})
+            channel.send({embeds:[embed],content:additional || null})
         })
     }
 }
@@ -66,6 +71,21 @@ function getEmbed(level, message, timestamp) {
         .setTitle(level)
         .addField("Message", message)
         .setFooter(`Sent at: ${timestamp}`)
+}
+
+function getAdditionalMsg(level){
+    switch(level){
+        case "fatal":
+            return "@everyone"
+        case "error":
+            return "@everyone"
+        case "warn":
+            let msg = ""
+            TECHS.forEach(tech => msg+=`<@${tech}> `)
+            return msg
+        default:
+            return ""
+    }
 }
 
 function getColor(level){
