@@ -15,7 +15,7 @@ logger.info("Startup")
 
 client.on('ready', async () => {
     logger.add(await DiscordTransport.buildDiscordTransport(client,config.channelsLogging,{level:"info"}))
-    logger.info(`Logged in as ${client.user.tag}!`);
+    logger.info(`Bot started and logged in as ${client.user.tag}!`);
 });
 
 client.on('messageCreate', async message => {
