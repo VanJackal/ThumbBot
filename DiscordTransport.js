@@ -51,7 +51,12 @@ class DiscordTransport extends Transport {
 
     sendToLogging(embed, additional) {
         this.channels.forEach(channel => {
-            channel.send({embeds:[embed],content:additional || null})
+            try {
+                channel.send({embeds:[embed],content:additional || null})
+            } catch (e) {
+                console.log("Error in DiscordTransport when sending to a logging channel")
+                console.log(e)
+            }
         })
     }
 }
