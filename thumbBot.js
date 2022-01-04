@@ -1,5 +1,6 @@
 const Discord = require("discord.js");
 const {logger} = require('./logging')
+const DiscordTransport = require("./DiscordTransport")
 
 const intents = ['GUILDS', 'GUILD_MESSAGES', 'GUILD_MEMBERS', 'DIRECT_MESSAGES']
 const client = new Discord.Client({intents: intents});
@@ -12,7 +13,8 @@ const EMBED_VERIFY_COLOR = "#00ff7b"
 
 logger.info("Startup")
 
-client.on('ready', () => {
+client.on('ready', async () => {
+    logger.add(await DiscordTransport.buildDiscordTransport(client,config.channelsLogging,{level:"info"}))
     logger.info(`Logged in as ${client.user.tag}!`);
 });
 
