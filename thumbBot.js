@@ -109,6 +109,7 @@ async function processDenyButton(interaction) {
     logger.info(`buttonDeny called on submission - ${submissionId}`)
     API.denyPending(submissionId)
     await interaction.reply(`Value for submission \`${submissionId}\` has been **denied**.`)
+        .catch(discordErrorHandler)
 }
 
 /**
@@ -262,6 +263,10 @@ async function messageUser(userId, message){//Todo get this to message and send 
     } else {
         logger.warn(`Cannot message user[${userId}]: Unable to fetch user`)
     }
+}
+
+const discordErrorHandler = (e) => {
+    logger.error(e.toString())
 }
 
 client.login(TOKEN);
