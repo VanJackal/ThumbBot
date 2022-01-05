@@ -20,9 +20,9 @@ const TECHS = [
  * @param opts
  * @returns {Promise<DiscordTransport>}
  */
-async function buildDiscordTransport(client, channelIds, opts = {}){
+async function buildDiscordTransport(client, channelIds, opts = {}) {
     const channels = await getChannelsFromList(client, channelIds)
-    return new DiscordTransport(client,channels,opts)
+    return new DiscordTransport(client, channels, opts)
 }
 
 class DiscordTransport extends Transport {
@@ -37,9 +37,9 @@ class DiscordTransport extends Transport {
         this.channels = channels
     }
 
-    log(info,callback){
+    log(info, callback) {
         setImmediate(() => {
-            this.emit('logged',info)
+            this.emit('logged', info)
         })
 
         const embed = getEmbed(info.level, info.message, info.timestamp)
@@ -51,12 +51,10 @@ class DiscordTransport extends Transport {
 
     sendToLogging(embed, additional) {
         this.channels.forEach(channel => {
-            try {
-                channel.send({embeds:[embed],content:additional || null})
-            } catch (e) {
+            channel.send({embeds: [embed], content: additional || null}).catch(e => {
                 console.log("Error in DiscordTransport when sending to a logging channel")
                 console.log(e)
-            }
+            })
         })
     }
 }
@@ -78,23 +76,23 @@ function getEmbed(level, message, timestamp) {
         .setFooter(`Sent at: ${timestamp}`)
 }
 
-function getAdditionalMsg(level){
-    switch(level){
+function getAdditionalMsg(level) {
+    switch (level) {
         case "fatal":
             return "@everyone"
         case "error":
             return "@everyone"
         case "warn":
             let msg = ""
-            TECHS.forEach(tech => msg+=`<@${tech}> `)
+            TECHS.forEach(tech => msg += `<@${tech}> `)
             return msg
         default:
             return ""
     }
 }
 
-function getColor(level){
-    switch(level){
+function getColor(level) {
+    switch (level) {
         case "fatal":
             return COLOR_FATAL
         case "error":
@@ -117,7 +115,7 @@ function getColor(level){
  * @param {*[]} channelList
  * @returns {Promise<Discord.TextChannel[]>}
  */
-async function getChannelsFromList(client, channelList){
+async function getChannelsFromList(client, channelList) {
     let channels = []
     channelList.forEach(channelId => {
         client.channels.fetch(channelId).then(channel => channels.push(channel))
@@ -126,7 +124,7 @@ async function getChannelsFromList(client, channelList){
 }
 
 module.exports = {
-    DiscordTransport:DiscordTransport,
-    getChannelsFromList:getChannelsFromList,
-    buildDiscordTransport:buildDiscordTransport
+    DiscordTransport: DiscordTransport,
+    getChannelsFromList: getChannelsFromList,
+    buildDiscordTransport: buildDiscordTransport
 }
