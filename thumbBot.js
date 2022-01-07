@@ -51,7 +51,12 @@ async function disableButtons(message) {
             }
         })
     })
-    await message.edit({components:rows})
+    try {
+        await message.edit({components:rows})
+    } catch (e) {
+        logger.error("Error on message edit in 'disableButtons'")
+        discordErrorHandler(e)
+    }
 }
 
 /**
@@ -62,9 +67,14 @@ async function disableButtons(message) {
  * @returns {Promise<void>}
  */
 async function disableButtonsFromId(messageId,channel= null){
-    channel = channel ?? await client.channels.fetch(config.channelVerify)
-    const message = await channel.messages.fetch(messageId)
-    await disableButtons(message)
+    try {
+        channel = channel ?? await client.channels.fetch(config.channelVerify)
+        const message = await channel.messages.fetch(messageId)
+        await disableButtons(message)
+    } catch (e){
+        logger.error(`Error when disabling buttons for ${messageId}`)
+        discordErrorHandler(e)
+    }
 }
 
 /**
